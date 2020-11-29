@@ -5,43 +5,42 @@
 
 namespace OrangeDrumExplorer{
     Solver::Solver(){
+        //default limits and step
         set_limits(0., 1.);
         set_time_step(0.01);
     }
 
-    Solver::Solver(double limit_low, double limit_high){
-        if (limit_high <= limit_low){
+    Solver::Solver(double low, double high){
+        set_limits(low, high);
+        set_time_step( (high - low)/100);
+    }
+
+    void Solver::set_limits(double low, double high){
+        if (high <= low){
             throw std::invalid_argument("limit_high must be larger than limit_low");
         }
         else{
-            set_limits(limit_low, limit_high);
-            set_time_step( (limit_high - limit_low)/100);
+            limit_low = low;
+            limit_high = high;
         }
     }
 
-    void Solver::set_limits(double limit_low, double limit_high){
-        if (limit_high <= limit_low){
-            throw std::invalid_argument("limit_high must be larger than limit_low");
-        }
-        else{
-            this->limit_low = limit_low;
-            this->limit_high = limit_high;
-        }
-    }
-
-    void Solver::set_time_step(double time_step){
-        if (time_step < 0.){
+    void Solver::set_time_step(double dt){
+        if (dt < 0.){
             throw std::invalid_argument("time_step must be larger than 0");
         }
-        else{
-            this->time_step = time_step;
+        else if (dt> (limit_high - limit_low)/2.){
+            throw std::invalid_argument("time_step must be smaller than half the domain");
+        }
+        else {
+            time_step = dt;
         }
     }
 
     vec EulerExplicit::solve(func dnf_dtn, const vec& y0){
-        double a = this->limit_low;
-        double b = this->limit_high;
-        double dt = this->time_step;
+        double a = limit_low;
+        double b = limit_high;
+        double dt = time_step;
         const size_t N = (b-a)/dt;
         const size_t n = y0.size();
         
@@ -67,7 +66,7 @@ namespace OrangeDrumExplorer{
             t += dt;
         }
         if (t < b-dt){
-            std::cout << "WARNING: the timestep is too small for the boundaries!" << std::endl;
+            std::cout << "WARNING: the timestep is too small for the boundaries! Overflow might affect the solution" << std::endl;
         }
 
         return result;

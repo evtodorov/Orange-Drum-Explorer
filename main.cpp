@@ -13,10 +13,12 @@ void printVec(const std::vector<T>& v){
 
 int main(int, char**) {
     std::cout << "Hello, world!\n";
-    //Initialize the solver between with domain between 0 and 4, default time step
-    OrangeDrumExplorer::EulerExplicit solver(0., 4.);
+    //Setup a generic solver
+    std::unique_ptr<OrangeDrumExplorer::Solver> solver;
+    //Initialize an Explicit Euler solver with domain between 0 and 4, default time step
+    solver = std::make_unique<OrangeDrumExplorer::EulerExplicit>(0., 4.);
     // Explicitly set time step
-    solver.set_time_step(4./128);
+    solver->set_time_step(4./128);
     // Create initial conditions
     OrangeDrumExplorer::vec y0 = {1., -2.};
     // Create equation to solve
@@ -24,7 +26,7 @@ int main(int, char**) {
     OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y){return t + y[1] - 3*y[0];};
     std::cout << "Hello, Solver!\n";
     // Solve the equation for the given initial conditions
-    OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
+    OrangeDrumExplorer::vec y1 = solver->solve(f, y0);
     std::cout << "Hello, Solution!\n";
     // Print the output
     printVec(y1);

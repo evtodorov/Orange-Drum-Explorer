@@ -28,6 +28,10 @@ int main(int, char**) {
     // Solve the equation for the given initial conditions
     OrangeDrumExplorer::vec y1 = solver->solve(f, y0);
     std::cout << "Hello, Solution!\n";
-    // Print the output
-    printVec(y1);
+    // Store the output
+    std::ofstream outfile("Example_solution.txt");
+    solver->save_solution(outfile);
+    outfile.close();
+    // Print the last value to stdout
+    std::cout << y1[y1.size()-1] << std::endl;
 }

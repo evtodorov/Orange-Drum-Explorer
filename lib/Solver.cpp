@@ -4,6 +4,20 @@
 #include "solver.h"
 
 namespace OrangeDrumExplorer{
+
+    class bad_function_call : public std::bad_function_call
+    {
+        private:
+            std::string msg;
+        public:
+            bad_function_call(const std::string& message):
+            msg(message)
+            {}
+            const char* what() const noexcept {
+                return msg.c_str();
+            }
+    };
+
     Solver::Solver(){
         //default limits and step
         set_limits(0., 1.);
@@ -11,6 +25,7 @@ namespace OrangeDrumExplorer{
     }
 
     Solver::Solver(double low, double high){
+        //default step
         set_limits(low, high);
         set_time_step( (high - low)/100);
     }
@@ -22,6 +37,7 @@ namespace OrangeDrumExplorer{
         else{
             limit_low = low;
             limit_high = high;
+            init_result();
         }
     }
 
@@ -34,10 +50,46 @@ namespace OrangeDrumExplorer{
         }
         else {
             time_step = dt;
+            init_result();
         }
     }
 
-    vec EulerExplicit::solve(func dnf_dtn, const vec& y0){
+    void Solver::init_result(){
+        const size_t N = (limit_high-limit_low)/time_step;
+        try{
+            result.reserve(N+1);
+        }
+        catch (std::bad_alloc& e){
+            std::cerr << "The solution doesn't fit into memory" << std::endl << 
+                        e.what() << std::endl;
+        }
+        catch (std::length_error& e){
+            std::cerr << "The solution is too longfor std::vector" << std::endl <<
+                        e.what() << std::endl;
+        }
+
+       
+    }
+    bool Solver::check_solution_cache(){
+        return has_been_solved;
+    }
+    void Solver::save_solution(std::ofstream& outfile){
+        if (!has_been_solved){
+            throw bad_function_call("No cached solution to save");
+        }
+        bool doitmyself = !outfile.is_open();
+        if (doitmyself){
+            outfile.open("OrangeDrumExplorer_solution.txt");
+        }
+        for(auto el : result){
+            outfile << el << std::endl;
+        }
+        if (doitmyself){
+            outfile.close();
+        }
+    }
+
+    vec& EulerExplicit::solve(func dnf_dtn, const vec& y0){
         double a = limit_low;
         double b = limit_high;
         double dt = time_step;
@@ -46,8 +98,7 @@ namespace OrangeDrumExplorer{
         
         vec yt = y0; //copy
         vec ynext(n);
-        vec result(N+1, 0.);
-        result[0] = y0[0];
+        result.push_back(y0[0]);
 
         double t = a;
         //step through the domain
@@ -62,13 +113,13 @@ namespace OrangeDrumExplorer{
             // update second highest derivative based on highest
             ynext[n-1] = yt[n-1] + dnf_dtn(t, yt)*dt;
             yt = ynext; //copy - more efficient way?
-            result[i+1] = ynext[0];
+            result.push_back(ynext[0]);
             t += dt;
         }
-        if (t < b-dt){
+        if (t < b-dt || t > b+dt){
             std::cout << "WARNING: the timestep is too small for the boundaries! Overflow might affect the solution" << std::endl;
         }
-
+        has_been_solved = true;
         return result;
     }
 

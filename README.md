@@ -30,8 +30,17 @@ An example of how to use the library is provided in [main.cpp]() and is explaine
     // y'' - y' + 3y = t -> y'' = t + y' - 3y
     OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y){return t + y[1] - 3*y[0];};
     ```
+	
 1.  The user calls the `solve` function of the Solver with the equation function and initial conditions vector. The output is the numerical solutions of the ODE at each time step in the domain.
     ```
     // Solve the equation for the given initial conditions
     OrangeDrumExplorer::vec y1 = solver->solve(f, y0);
     ```
+	
+1. The user can store the solution to a file using the `save_solution` function of the Solver. Please note, the user is responsible for handling file operations
+	```
+	// Store the output
+    std::ofstream outfile("Example_solution.txt");
+    solver->save_solution(outfile);
+    outfile.close();
+	```

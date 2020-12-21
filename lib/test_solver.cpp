@@ -6,35 +6,40 @@
 const OrangeDrumExplorer::vec y0_const = {1.};
 const OrangeDrumExplorer::func f_const = [](double t, OrangeDrumExplorer::vec y){return 1.;};
 
+template<typename S>
 void test_default(){
-    OrangeDrumExplorer::EulerExplicit solver;
+    S solver;
     OrangeDrumExplorer::vec y1 = solver.solve(f_const, y0_const);
     assert((y1.size()==101 && "Default constructor limits and time step.")) ;
 }
 
+template<typename S>
 void test_custom(){
-    OrangeDrumExplorer::EulerExplicit solver(0, 4.);
+    S solver(0, 4.);
     OrangeDrumExplorer::vec y1 = solver.solve(f_const, y0_const);
     assert((y1.size()==101 && "Custom constructor limits and default time step.")) ;
 }
 
+template<typename S>
 void test_limits(){
-    OrangeDrumExplorer::EulerExplicit solver;
+    S solver;
     solver.set_limits(-2.,0);
     OrangeDrumExplorer::vec y1 = solver.solve(f_const, y0_const);
     assert((y1.size()==201 && "Custom limits and default time step.")) ;
 }
 
+template<typename S>
 void test_dt(){
-    OrangeDrumExplorer::EulerExplicit solver;
+    S solver;
     solver.set_time_step(0.05);
     OrangeDrumExplorer::vec y1 = solver.solve(f_const, y0_const);
     assert((y1.size()==21 && "Default constructor limits and custom time step.")) ;
 }
 
+template<typename S>
 void test_reversed(){
     try{
-        OrangeDrumExplorer::EulerExplicit solver(4, 0);
+        S solver(4, 0);
     }
     catch (std::invalid_argument& e){
         return;
@@ -42,8 +47,9 @@ void test_reversed(){
     assert((1==0 && "Reversed limits"));
 }
 
+template<typename S>
 void test_large_dt(){
-    OrangeDrumExplorer::EulerExplicit solver(0,1.);
+    S solver(0,1.);
     try{
         solver.set_time_step(0.6);
     }
@@ -111,12 +117,13 @@ void test_save_to_file(OrangeDrumExplorer::EulerExplicit& solver){
 }
 
 int main(int, char**) {
-    test_default();
-    test_custom();
-    test_limits();
-    test_dt();
-    test_reversed();
-    test_large_dt();
-    auto solver = test_solution();
+    typedef OrangeDrumExplorer::EulerExplicit EE;
+    test_default<EE>();
+    test_custom<EE>();
+    test_limits<EE>();
+    test_dt<EE>();
+    test_reversed<EE>();
+    test_large_dt<EE>();
+    EE solver = test_solution();
     test_save_to_file(solver);
 }

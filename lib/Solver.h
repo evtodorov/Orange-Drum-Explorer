@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ORANGE_DRUM_EXPLORER_SOLVER_H
+#define ORANGE_DRUM_EXPLORER_SOLVER_H
 
 #include <functional>
 #include <vector>
@@ -9,7 +10,7 @@ namespace OrangeDrumExplorer
     typedef std::function<double(double, const vec&)> func ;
 
     /**
-     * Base class for implementing solvers.
+     * Base class for implementing solvers.\n
      * 
      * Solve an ordinary differential equation within the limits of a Domain,
      * given an initial value at the lower limit
@@ -51,3 +52,4 @@ namespace OrangeDrumExplorer
     };
 }
 
+#endif /*ORANGE_DRUM_EXPLORER_SOLVER_H*/

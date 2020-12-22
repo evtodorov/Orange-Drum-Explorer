@@ -39,7 +39,7 @@ void test_reversed(){
     catch (std::invalid_argument& e){
         return;
     }
-    assert((1==0 && "Reversed limits"));
+    assert((false && "Reversed limits"));
 }
 
 void test_large_dt(){
@@ -50,7 +50,7 @@ void test_large_dt(){
         catch (std::invalid_argument& e){
         return;
     }
-    assert((1==0 && "Too large time step"));
+    assert((false && "Too large time step"));
 }
 
 void test_solution(){

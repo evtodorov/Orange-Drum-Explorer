@@ -4,11 +4,10 @@
 #include "Solver.h"
 
 namespace OrangeDrumExplorer{
-    Solver::Solver(){
-        //default limits and step
-        set_limits(0., 1.);
-        set_time_step(0.01);
-    }
+    
+    Solver::Solver()
+        : Solver(0., 1.) //default limits and step
+    {}
 
     Solver::Solver(double low, double high){
         set_limits(low, high);
@@ -63,10 +62,7 @@ namespace OrangeDrumExplorer{
             ynext[n-1] = yt[n-1] + dnf_dtn(t, yt)*dt;
             yt = ynext; //copy - more efficient way?
             result[i+1] = ynext[0];
-            t += dt;
-        }
-        if (t < b-dt){
-            std::cout << "WARNING: the timestep is too small for the boundaries! Overflow might affect the solution" << std::endl;
+            t = a+i*dt;
         }
 
         return result;

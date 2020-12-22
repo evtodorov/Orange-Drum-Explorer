@@ -4,11 +4,11 @@
 
 // Helper function to see the solution
 template <typename T>
-void printVec(const std::vector<T>& v){
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& v){
     for (auto i : v){
-        std::cout << i << " ";
+        os << i << " ";
     }
-    std::cout << std::endl;
+    os << std::endl;
 }
 
 int main(int, char**) {
@@ -27,5 +27,5 @@ int main(int, char**) {
     OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
     std::cout << "Hello, Solution!\n";
     // Print the output
-    printVec(y1);
+    std::cout << y1;
 }

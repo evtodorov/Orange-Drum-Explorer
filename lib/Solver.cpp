@@ -1,7 +1,7 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "solver.h"
+#include "Solver.h"
 
 namespace OrangeDrumExplorer{
     Solver::Solver(){

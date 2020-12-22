@@ -6,7 +6,7 @@ Ordinary Differential Equiation Solver in the context of Advanced Programming IN
 
 The solver is packaged in a static library, defining class `Solver` and subclassed to implement different solvers. Currently, only an Explicit Euler method has been defined.
 
-An example of how to use the library is provided in [main.cpp]() and is explained below:
+An example of how to use the library is provided in [main.cpp](./main.cpp) and is explained below:
 
 1. The user creates a Solver object and (optionally) configures the domain and time step to use
     ```

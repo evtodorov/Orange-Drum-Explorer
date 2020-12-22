@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "solver.h"
+#include "Solver.h"
 #include <cassert>
 
 const OrangeDrumExplorer::vec y0_const = {1.};

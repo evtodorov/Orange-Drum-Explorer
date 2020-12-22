@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "solver.h"
+#include "Solver.h"
 
 // Helper function to see the solution
 template <typename T>

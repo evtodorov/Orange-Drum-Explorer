@@ -1,7 +1,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
-
+#include <cmath>
 #include "Solver.h"
 
 #ifndef ODEINCL_ADEPT_SORUCE_H
@@ -22,7 +22,8 @@ namespace OrangeDrumExplorer{
                 return msg.c_str();
             }
     };
-    
+
+
     Solver::Solver()
         : Solver(0., 1.) //default limits and step
     {}
@@ -125,6 +126,75 @@ namespace OrangeDrumExplorer{
             at.set_value(t); 
             ynext[n-1] = yt[n-1]+ dnf_dtn(at, yt)*dt;
             yt = ynext; //copy - more efficient way?
+            result[i+1] = adept::value(ynext[0]);
+            t = a+i*dt;
+        }
+        has_been_solved = true;
+        return result;
+    }
+
+    double EulerImplicit::get_threshold(){
+        return threshold;
+    }
+
+    void EulerImplicit::set_threshold(double new_threshold){
+        threshold = new_threshold;
+    }
+
+
+    advec EulerImplicit::NewtonSolve(func dnf_dtn, const double t, const advec& x0){
+        adept::Stack ADstack; 
+        ADstack.new_recording();
+        const size_t n = x0.size();
+        const double dt = time_step;
+        advec F = x0;
+        advec x = x0;
+        int iter=0;
+        while (iter<max_iterations){
+            for (size_t j=0; j<n-1;j++){
+                F[j] = x0[j] + dt*x[j+1]-x[j];
+            }
+            F[n-1] = x0[n-1] + dt*dnf_dtn(t, x) - x[n-1];
+
+            //TODO: define Jacobian Jf
+            //   -1   1     0    0
+            //   0    -1    1    0
+            //   0    0     -1   1
+            // df/dy df/dy df/dy df/y-1
+            //TODO: use Eigen to solve x = solve(Jf, F) - x
+            //    Eigen::FullPivLU<Matrix<double, 3, 3>> lu(m2);
+            //    invertible = lu.isInvertible();
+            //    Eigen::Vector3d sol2 = lu.solve(v);
+            ++iter;
+        }
+
+        return x;
+    }
+
+    vec& EulerImplicit::solve(func dnf_dtn, const vec& y0){
+
+
+        const double a = limit_low;
+        const double b = limit_high;
+        const double dt = time_step;
+        const size_t N = (b-a)/dt;
+        const size_t n = y0.size();
+        
+        advec yt;
+        for (auto d : y0){
+            adouble ad = d;
+            yt.push_back(ad);
+        }
+        advec ynext(n);
+        result.push_back(y0[0]);
+        result.resize(N+1);
+        double t = a;
+        adouble at;
+        //step through the domain
+        for (auto i = 0; i < N; ++i){
+            if (isnan(adept::value(ynext[0]))){ 
+                ynext = NewtonSolve(dnf_dtn, t, yt);
+            }
             result[i+1] = adept::value(ynext[0]);
             t = a+i*dt;
         }

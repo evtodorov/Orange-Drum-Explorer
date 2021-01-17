@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cassert>
 #include <Eigen/Core>
 #include <Eigen/LU>
 #include <adept.h>
@@ -33,6 +34,7 @@ int main()
 {
     Matrix3d m = Matrix3d::Random();
     std::cout << m << std::endl;
+    Eigen::Vector3d v = Eigen::Vector3d::Random();
     MatrixXd inverse(3,3);
     bool invertible;
     m.computeInverseWithCheck(inverse,invertible);
@@ -42,7 +44,10 @@ int main()
     else {
         std::cout << "It is not invertible." << std::endl;
     }
-
+    Eigen::Vector3d sol = m.fullPivLu().solve(v);
+    std::cout << sol << std::endl;
+    std::cout << "Infinity: " << std::numeric_limits<double>::has_infinity << std::endl;
+    std::cout << "Not-a-number: " <<std::numeric_limits<double>::has_quiet_NaN << std::endl;
     MatrixXd m2(3,3);
     m2 << 2,  1,  2,
           1,  0,  1,
@@ -56,6 +61,11 @@ int main()
     }
     else {
         std::cout << "It is not invertible." << std::endl;
+    }
+    Eigen::Vector3d sol2 = lu.solve(v);
+    std::cout << sol2 << std::endl;
+    if((m2*sol2).isApprox(v)){
+        std::cout << "Not correct!" << std::endl;   
     }
     std::vector<double> x_val = {2,3};
     std::vector<double> dy_dx(2);

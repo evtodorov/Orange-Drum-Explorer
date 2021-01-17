@@ -51,7 +51,7 @@ namespace OrangeDrumExplorer
              * Solve the function over the domain, given the initial value
              * 
              * @param dnf_dtn(t,y) - explicit definition of the ODE in terms of the highest order (n) derivative
-             *      @param t - independet variable
+             *      @param t - independent variable
              *      @param y - vector of lower derivatives y[0] = f; y[1] =f'; y[2] = f'' etc. up-to n-1
              * @param y0 - initial value of the function and n-1 lowest derivatives at the lower limit
              */
@@ -61,6 +61,21 @@ namespace OrangeDrumExplorer
     class EulerExplicit : public Solver {
         public:
             using Solver::Solver;
+            vec& solve(func dnf_dtn, const vec& y0) override;
+    };
+
+    class EulerImplicit : public Solver {
+        protected:
+            double threshold = 1e-6;
+            const size_t max_iterations = 50;
+            // Solve a non-linear equation using the Newton Method
+            advec NewtonSolve(func dnf_dtn, const double t, const advec& x0);
+        public:
+            using Solver::Solver;
+            // Check the current threshold for the Newton iterative solver
+            double get_threshold();
+            // Check the current threshold for the Newton iterative solver
+            void set_threshold(double);
             vec& solve(func dnf_dtn, const vec& y0) override;
     };
 }

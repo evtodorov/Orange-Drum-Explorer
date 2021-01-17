@@ -22,12 +22,14 @@ The solver is packaged in a static library, defining class `Solver` and subclass
 
 An example of how to use the library is provided in [main.cpp](./main.cpp) and is explained below:
 
-1. The user creates a Solver object and (optionally) configures the domain and time step to use
+1. The user creates a Solver object, assigns a solver type and (optionally) configures the domain and time step to use
     ```
-    //Initialize the solver between with domain between 0 and 4, default time step
-    OrangeDrumExplorer::EulerExplicit solver(0., 4.);
+    //Setup a generic solver
+    std::unique_ptr<OrangeDrumExplorer::Solver> solver;
+    //Initialize an Explicit Euler solver with domain between 0 and 4, default time step
+    solver = std::make_unique<OrangeDrumExplorer::EulerExplicit>(0., 4.);
     // Explicitly set time step
-    solver.set_time_step(4./128);
+    solver->set_time_step(4./128);
     ```
 
 1. The user configures the initial conditions to use. The initial condition vector should contain initial value of the function and n-1 lowest derivatives at the lower limit, with `y0[0] = f(t0), y0[1] = f'(t0), ..., y0[n-1]`.
@@ -42,8 +44,17 @@ An example of how to use the library is provided in [main.cpp](./main.cpp) and i
     // y'' - y' + 3y = t -> y'' = t + y' - 3y
     OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y){return t + y[1] - 3*y[0];};
     ```
-1.  The user calls the `solve` function of the Solver subclass with the equation function and initial conditions vector. The output is the numerical solutions of the ODE at each time step in the domain.
+	
+1.  The user calls the `solve` function of the Solver with the equation function and initial conditions vector. The output is the numerical solutions of the ODE at each time step in the domain.
     ```
     // Solve the equation for the given initial conditions
-    OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
+    OrangeDrumExplorer::vec y1 = solver->solve(f, y0);
     ```
+	
+1. The user can store the solution to a file using the `save_solution` function of the Solver. Please note, the user is responsible for handling file operations
+	```
+	// Store the output
+    std::ofstream outfile("Example_solution.txt");
+    solver->save_solution(outfile);
+    outfile.close();
+	```

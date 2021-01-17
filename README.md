@@ -2,6 +2,20 @@
 
 Ordinary Differential Equiation Solver in the context of Advanced Programming IN1503 WS20/21
 
+## Building
+On Windows:
+```
+cmake . -Bbuild
+cd build
+cmake --build . --target Orange-Drum-Explorer --config Release
+```
+
+On Linux (to be tested):
+```
+cmake .
+make all
+```
+
 ## How to use
 
 The solver is packaged in a static library, defining class `Solver` and subclassed to implement different solvers. Currently, only an Explicit Euler method has been defined.

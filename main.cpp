@@ -25,7 +25,8 @@ int main(int, char**) {
         OrangeDrumExplorer::vec y0 = {1., -2.};
         // Create equation to solve
         // y'' - y' + 3y = t -> y'' = t + y' - 3y
-        OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y){return t + y[1] - 3*y[0];};
+        OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
+                                     {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
         std::cout << "Hello, Solver!\n";
         // Solve the equation for the given initial conditions
         OrangeDrumExplorer::vec y1 = solver->solve(f, y0);

@@ -38,11 +38,12 @@ An example of how to use the library is provided in [main.cpp](./main.cpp) and i
     OrangeDrumExplorer::vec y0 = {1., -2.};
     ```
 
-1. The user creates a function `f(t,y)` for the ODE in terms of the highest order derivative, assuming y is a vector of the function and n-1 lower derivatives such that  `y[0] = f(t), y[1] = f'(t), ..., y[n-1]` and t is the independent variable. 
+1. The user creates a function `f(t,y)` for the ODE in terms of the highest order derivative, assuming y is a vector of the function and n-1 lower derivatives such that  `y[0] = f(t), y[1] = f'(t), ..., y[n-1]` and t is the independent variable. The function needs to use the adept library overloaded type `adouble` as illustrated.
     ```
     // Create equation to solve
     // y'' - y' + 3y = t -> y'' = t + y' - 3y
-    OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y){return t + y[1] - 3*y[0];};
+    OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
+                                 {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
     ```
 	
 1.  The user calls the `solve` function of the Solver with the equation function and initial conditions vector. The output is the numerical solutions of the ODE at each time step in the domain.

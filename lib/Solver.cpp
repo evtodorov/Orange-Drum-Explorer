@@ -1,7 +1,13 @@
 #include <stdexcept>
 #include <iostream>
+#include <algorithm>
 
 #include "Solver.h"
+
+#ifndef ODEINCL_ADEPT_SORUCE_H
+#include <adept_source.h>
+#define ODEINCL_ADEPT_SORUCE_H
+#endif /*ODEINCL_ADEPT_SORUCE_H*/
 
 namespace OrangeDrumExplorer{
     class bad_function_call : public std::bad_function_call
@@ -87,17 +93,25 @@ namespace OrangeDrumExplorer{
     }
 
     vec& EulerExplicit::solve(func dnf_dtn, const vec& y0){
-        double a = limit_low;
-        double b = limit_high;
-        double dt = time_step;
+        adept::Stack ADstack; //segfault if not initialized
+        ADstack.pause_recording();
+
+        const double a = limit_low;
+        const double b = limit_high;
+        const double dt = time_step;
         const size_t N = (b-a)/dt;
         const size_t n = y0.size();
         
-        vec yt = y0; //copy
-        vec ynext(n);
+        advec yt;
+        for (auto d : y0){
+            adouble ad = d;
+            yt.push_back(ad);
+        }
+        advec ynext(n);
         result.push_back(y0[0]);
         result.resize(N+1);
         double t = a;
+        adouble at;
         //step through the domain
         for (auto i = 0; i < N; ++i){
 
@@ -108,9 +122,10 @@ namespace OrangeDrumExplorer{
             }
             // compute highest derivative for this loop
             // update second highest derivative based on highest
-            ynext[n-1] = yt[n-1] + dnf_dtn(t, yt)*dt;
+            at.set_value(t); 
+            ynext[n-1] = yt[n-1]+ dnf_dtn(at, yt)*dt;
             yt = ynext; //copy - more efficient way?
-            result[i+1] = ynext[0];
+            result[i+1] = adept::value(ynext[0]);
             t = a+i*dt;
         }
         has_been_solved = true;

@@ -4,7 +4,7 @@
 #include <cassert>
 
 const OrangeDrumExplorer::vec y0_const = {1.};
-const OrangeDrumExplorer::func f_const = [](double t, OrangeDrumExplorer::vec y){return 1.;};
+const OrangeDrumExplorer::func f_const = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y){return 1.;};
 
 template<typename S>
 void test_default(){
@@ -59,11 +59,13 @@ void test_large_dt(){
     assert((false && "Too large time step"));
 }
 
+
 OrangeDrumExplorer::EulerExplicit test_solution(){
     OrangeDrumExplorer::EulerExplicit solver(0., 4.);
     solver.set_time_step(4./128);
     OrangeDrumExplorer::vec y0 = {1., -2.};
-    OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y){return t + y[1] - 3*y[0];};
+    OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
+                                 {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
     OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
     assert(((5.47601 < y1.back() && y1.back() < 5.47603) && "Solution accuracy"));
     return solver;

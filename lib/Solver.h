@@ -6,10 +6,14 @@
 #include <iostream>
 #include <fstream>
 
+#include <adept.h>
+
 namespace OrangeDrumExplorer
 {
+    typedef adept::adouble adouble;
     typedef std::vector<double> vec;
-    typedef std::function<double(double, const vec&)> func ;
+    typedef std::vector<adouble> advec;
+    typedef std::function<adouble(adouble, const advec&)> func ;
 
     /**
      * Base class for implementing solvers.\n

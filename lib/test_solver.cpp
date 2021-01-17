@@ -65,7 +65,7 @@ OrangeDrumExplorer::EulerExplicit test_solution(){
     OrangeDrumExplorer::vec y0 = {1., -2.};
     OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y){return t + y[1] - 3*y[0];};
     OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
-    assert(((5.40506 < y1.back() && y1.back() < 5.40508) && "Solution accuracy"));
+    assert(((5.47601 < y1.back() && y1.back() < 5.47603) && "Solution accuracy"));
     return solver;
 }
 
@@ -109,7 +109,7 @@ void test_save_to_file(OrangeDrumExplorer::EulerExplicit& solver){
     if (test_out.is_open()){
         solver.save_solution(test_out);
         test_out.close();
-        _check_file(fname, 129, 5.40506, 5.40508);
+        _check_file(fname, 129, 5.47601, 5.47603);
     }
     else{
         assert((1==0 && "Couldn't test file storage"));

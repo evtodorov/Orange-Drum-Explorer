@@ -96,7 +96,7 @@ namespace OrangeDrumExplorer{
         vec yt = y0; //copy
         vec ynext(n);
         result.push_back(y0[0]);
-
+        result.resize(N+1);
         double t = a;
         //step through the domain
         for (auto i = 0; i < N; ++i){

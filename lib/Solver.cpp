@@ -9,6 +9,9 @@
 #define ODEINCL_ADEPT_SORUCE_H
 #endif /*ODEINCL_ADEPT_SORUCE_H*/
 
+#include <Eigen/Core>
+#include <Eigen/LU>
+
 namespace OrangeDrumExplorer{
     class bad_function_call : public std::bad_function_call
     {
@@ -142,61 +145,116 @@ namespace OrangeDrumExplorer{
     }
 
 
-    advec EulerImplicit::NewtonSolve(func dnf_dtn, const double t, const advec& x0){
-        adept::Stack ADstack; 
-        ADstack.new_recording();
+    struct EulerImplicit::DivergentException : public std::exception{
+        const char * what () const throw (){
+    	    return "The solution doesn't converge.";
+        }
+    };
+
+    vec EulerImplicit::NewtonSolve(func dnf_dtn, const double t, const vec& x0){
+        adept::Stack ADstack;
         const size_t n = x0.size();
         const double dt = time_step;
-        advec F = x0;
-        advec x = x0;
-        int iter=0;
-        while (iter<max_iterations){
-            for (size_t j=0; j<n-1;j++){
-                F[j] = x0[j] + dt*x[j+1]-x[j];
-            }
-            F[n-1] = x0[n-1] + dt*dnf_dtn(t, x) - x[n-1];
+        advec x;
+        for (auto el : x0){
+            x.push_back(el);
+        }
+        ADstack.new_recording();
 
-            //TODO: define Jacobian Jf
-            //   -1   1     0    0
-            //   0    -1    1    0
-            //   0    0     -1   1
-            // df/dy df/dy df/dy df/y-1
-            //TODO: use Eigen to solve x = solve(Jf, F) - x
-            //    Eigen::FullPivLU<Matrix<double, 3, 3>> lu(m2);
-            //    invertible = lu.isInvertible();
-            //    Eigen::Vector3d sol2 = lu.solve(v);
-            ++iter;
+        int iter=0;
+
+        //define Jacobian Jf for ND Newton Method
+        //   -1   1     0    0
+        //   0    -1    1    0
+        //   0    0     -1   1
+        // df/dy df/dy df/dy df/y-1 (update every loop)
+        Eigen::MatrixXd JF = Eigen::MatrixXd::Constant(n,n,0.);
+        for(size_t i=0; i<n-1; i++){
+            JF(i,i)=-1;
+            JF(i,i+1)=dt;
         }
 
-        return x;
+        Eigen::VectorXd F = Eigen::VectorXd::Constant(n, 0);
+        Eigen::VectorXd delta = Eigen::VectorXd::Constant(n, 0);
+        adouble eval_dnf_dtn;
+        while (iter<max_iterations){
+
+            eval_dnf_dtn = dnf_dtn(t, x);
+            eval_dnf_dtn.set_gradient(1.0);
+            ADstack.compute_adjoint();
+
+            //Define F (RHS)
+            // F = y(previous t) + dt*y'(this t, previous iter) + y(this t, previous iter)
+            for (size_t j=0; j<n-1;j++){
+                F(j) = adept::value(x0[j] + dt*x[j+1]-x[j]);
+                JF(n-1,j) = dt*x[j].get_gradient(); //last row of JF thru automatic derivatives
+            }
+            // y'[n] = dnf_dtn(this t, previous iter)
+            F(n-1) = adept::value(x0[n-1] + dt*eval_dnf_dtn - x[n-1]);
+            
+            JF(n-1, n-1) = dt*x[n-1].get_gradient() - 1.; //last element
+    
+            // use Eigen to solve x = solve(Jf, F) - x
+            delta = JF.fullPivLu().solve(F);
+             std::cout << eval_dnf_dtn << std::endl;
+             std::cout << F << std::endl;
+            // std::cout << JF << std::endl;
+            // std::cout << delta << std::endl;
+            // Check if real solution
+            if((JF*delta).isApprox(F)!=true){
+                throw DivergentException();
+            }
+            // Check if valid solution
+            if (delta.array().isNaN().any()){
+                throw DivergentException();
+            }
+            // Check if converged
+            //std::cout << delta.array().abs() << " " << iter << std::endl;
+            if ((delta.array().abs() < threshold).all()){
+                //last loop
+                iter = max_iterations; 
+            }
+            // Update x
+            for (size_t j=0; j<n; ++j){
+                x[j] -= delta(j);
+            }
+            std::cout << x[0] << " " << x[1] << std::endl;
+            ++iter;
+        }
+        vec out;
+        for (auto el: x){
+            out.push_back(adept::value(el));
+        }
+        return out;
     }
 
     vec& EulerImplicit::solve(func dnf_dtn, const vec& y0){
-
-
         const double a = limit_low;
         const double b = limit_high;
         const double dt = time_step;
         const size_t N = (b-a)/dt;
         const size_t n = y0.size();
         
-        advec yt;
-        for (auto d : y0){
-            adouble ad = d;
-            yt.push_back(ad);
-        }
-        advec ynext(n);
+        vec yt = y0;
+
+        vec ynext(n);
         result.push_back(y0[0]);
         result.resize(N+1);
         double t = a;
-        adouble at;
         //step through the domain
         for (auto i = 0; i < N; ++i){
-            if (isnan(adept::value(ynext[0]))){ 
-                ynext = NewtonSolve(dnf_dtn, t, yt);
+            t = a+(i+1)*dt;
+            try{
+                 ynext = NewtonSolve(dnf_dtn, t, yt);
             }
-            result[i+1] = adept::value(ynext[0]);
-            t = a+i*dt;
+            catch (DivergentException){
+                for (auto j=i; j<N; ++j){
+                    result[j+1] = std::nan("");
+                }
+                break;
+            }
+            result[i+1] = ynext[0];
+            yt = ynext;
         }
         has_been_solved = true;
         return result;

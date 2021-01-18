@@ -18,7 +18,8 @@ int main(int, char**) {
         //Setup a generic solver
         std::unique_ptr<OrangeDrumExplorer::Solver> solver;
         //Initialize an Explicit Euler solver with domain between 0 and 4, default time step
-        solver = std::make_unique<OrangeDrumExplorer::EulerExplicit>(0., 4.);
+        //solver = std::make_unique<OrangeDrumExplorer::EulerExplicit>(0., 4.);
+        solver = std::make_unique<OrangeDrumExplorer::EulerImplicit>(0., 4.);
         // Explicitly set time step
         solver->set_time_step(4./128);
         // Create initial conditions
@@ -26,7 +27,7 @@ int main(int, char**) {
         // Create equation to solve
         // y'' - y' + 3y = t -> y'' = t + y' - 3y
         OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
-                                     {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
+                                     {return OrangeDrumExplorer::adouble(t + y[1] - 3.0*y[0]);};
         std::cout << "Hello, Solver!\n";
         // Solve the equation for the given initial conditions
         OrangeDrumExplorer::vec y1 = solver->solve(f, y0);

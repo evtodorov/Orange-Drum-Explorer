@@ -66,10 +66,11 @@ namespace OrangeDrumExplorer
 
     class EulerImplicit : public Solver {
         protected:
-            double threshold = 1e-6;
+            double threshold = 1e-4;
             const size_t max_iterations = 50;
+            struct DivergentException;
             // Solve a non-linear equation using the Newton Method
-            advec NewtonSolve(func dnf_dtn, const double t, const advec& x0);
+            vec NewtonSolve(func dnf_dtn, const double t, const vec& x0);
         public:
             using Solver::Solver;
             // Check the current threshold for the Newton iterative solver

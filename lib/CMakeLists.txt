@@ -1,6 +1,12 @@
 add_library(solver Solver.cpp)
 target_include_directories(solver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(solver PUBLIC ext/adept)
+# Use bundled version of Eigen
+target_include_directories(solver PUBLIC ext/eigen)
+# Uncomment below to use an installed version of Eigen
+#find_package (Eigen3 3.0 REQUIRED NO_MODULE)
+#target_link_libraries (solver Eigen3::Eigen)
+
 
 enable_testing()
 add_executable(test_solver test_solver.cpp)

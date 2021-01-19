@@ -2,7 +2,7 @@
 
 Ordinary Differential Equiation Solver in the context of Advanced Programming IN1503 WS20/21.
 
-![logo](media/logo_white.png)
+![logo](media/logo_white_small.png)
 
 ## Building
 ### Dependencies
@@ -78,3 +78,14 @@ An example of how to use the library is provided in [main.cpp](./main.cpp) and i
     solver->save_solution(outfile);
     outfile.close();
 	```
+	
+### How to extend
+Implementing new Solvers is very easy - simply inherrit from the `Solver` class, override the virtual `solve` function and reuse or override other functions as you see fit!
+```class YourNewSolver : public Solver {
+        protected:
+			//your private vars
+        public:
+			//reuse Constructors
+            using Solver::Solver;
+			//override the virtual solve function
+            vec& solve(func dnf_dtn, const vec& y0) override; ```

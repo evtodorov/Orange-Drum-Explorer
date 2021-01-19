@@ -59,15 +59,15 @@ void test_large_dt(){
     assert((false && "Too large time step"));
 }
 
-
-OrangeDrumExplorer::EulerExplicit test_solution(){
-    OrangeDrumExplorer::EulerExplicit solver(0., 4.);
+template<typename S>
+S test_solution( double bottom, double top){
+    S solver(0., 4.);
     solver.set_time_step(4./128);
     OrangeDrumExplorer::vec y0 = {1., -2.};
     OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
                                  {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
     OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
-    assert(((5.47601 < y1.back() && y1.back() < 5.47603) && "Solution accuracy"));
+    assert(((bottom < y1.back() && y1.back() < top) && "Solution accuracy"));
     return solver;
 }
 
@@ -98,9 +98,10 @@ void _check_file(const std::string& fname, int steps, double last_min, double la
     }
 }
 
-void test_save_to_file(OrangeDrumExplorer::EulerExplicit& solver){
+template <typename S>
+void test_save_to_file(S& solver, const double bottom, const double top){
     const std::string fname = "test_EE_solution.txt";
-    OrangeDrumExplorer::EulerExplicit solver2(0., 4.);
+    S solver2(0., 4.);
     solver2.set_time_step(4./128);
     try{
         solver2.save_solution(std::ofstream());
@@ -111,7 +112,7 @@ void test_save_to_file(OrangeDrumExplorer::EulerExplicit& solver){
     if (test_out.is_open()){
         solver.save_solution(test_out);
         test_out.close();
-        _check_file(fname, 129, 5.47601, 5.47603);
+        _check_file(fname, 129, bottom, top);
     }
     else{
         assert((1==0 && "Couldn't test file storage"));
@@ -126,6 +127,15 @@ int main(int, char**) {
     test_dt<EE>();
     test_reversed<EE>();
     test_large_dt<EE>();
-    EE solver = test_solution();
-    test_save_to_file(solver);
+    EE solver = test_solution<EE>(5.33506, 5.33508);
+    test_save_to_file(solver, 5.33506, 5.33508);
+    typedef OrangeDrumExplorer::EulerExplicit IE;
+    test_default<IE>();
+    test_custom<IE>();
+    test_limits<IE>();
+    test_dt<IE>();
+    test_reversed<IE>();
+    test_large_dt<IE>();
+    IE solver2 = test_solution<IE>(1.90620,1.90622);
+    test_save_to_file(solver, 1.90620,1.90622);
 }

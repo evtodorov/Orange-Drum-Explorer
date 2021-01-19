@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+
 #include "Solver.h"
 
 #ifndef ODEINCL_ADEPT_SORUCE_H
@@ -108,16 +109,15 @@ namespace OrangeDrumExplorer{
         
         advec yt;
         for (auto d : y0){
-            adouble ad = d;
-            yt.push_back(ad);
+            yt.push_back(d);
         }
         advec ynext(n);
         result.push_back(y0[0]);
         result.resize(N+1);
         double t = a;
-        adouble at;
         //step through the domain
         for (auto i = 0; i < N; ++i){
+            t = a+(i+1)*dt;
 
             //update lower derivatives based on previous loop
             for (auto j=0; j < n - 1; ++j){
@@ -126,11 +126,9 @@ namespace OrangeDrumExplorer{
             }
             // compute highest derivative for this loop
             // update second highest derivative based on highest
-            at.set_value(t); 
-            ynext[n-1] = yt[n-1]+ dnf_dtn(at, yt)*dt;
+            ynext[n-1] = yt[n-1]+ dnf_dtn(t, yt)*dt;
             yt = ynext; //copy - more efficient way?
             result[i+1] = adept::value(ynext[0]);
-            t = a+i*dt;
         }
         has_been_solved = true;
         return result;
@@ -196,10 +194,7 @@ namespace OrangeDrumExplorer{
     
             // use Eigen to solve x = solve(Jf, F) - x
             delta = JF.fullPivLu().solve(F);
-             std::cout << eval_dnf_dtn << std::endl;
-             std::cout << F << std::endl;
-            // std::cout << JF << std::endl;
-            // std::cout << delta << std::endl;
+
             // Check if real solution
             if((JF*delta).isApprox(F)!=true){
                 throw DivergentException();
@@ -209,7 +204,6 @@ namespace OrangeDrumExplorer{
                 throw DivergentException();
             }
             // Check if converged
-            //std::cout << delta.array().abs() << " " << iter << std::endl;
             if ((delta.array().abs() < threshold).all()){
                 //last loop
                 iter = max_iterations; 
@@ -218,7 +212,6 @@ namespace OrangeDrumExplorer{
             for (size_t j=0; j<n; ++j){
                 x[j] -= delta(j);
             }
-            std::cout << x[0] << " " << x[1] << std::endl;
             ++iter;
         }
         vec out;

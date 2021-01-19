@@ -1,8 +1,21 @@
 # Orange-Drum-Explorer
 
-Ordinary Differential Equiation Solver in the context of Advanced Programming IN1503 WS20/21
+Ordinary Differential Equiation Solver in the context of Advanced Programming IN1503 WS20/21.
+
+![logo](media/logo_white.png)
 
 ## Building
+### Dependencies
+Orange-Drum-Explorer has the following dependencies:
+
+* [adept-v1.1](http://www.met.reading.ac.uk/clouds/adept/adept_documentation.pdf) is used for automatic differentiation
+* (a subset of) [eigen-v3.3.9](https://eigen.tuxfamily.org/) is used for linear algebra 
+* (TODO:) [catch2-v2.13.4](https://github.com/catchorg/Catch2) is used for testing
+
+Header-only versions are distributed together with the package in [](lib/ext). If you have any of them already installed, you might consider editing [](lib/CMakeLists.txt) to use the installed packages.
+
+### Using CMake
+
 On Windows:
 ```
 cmake . -Bbuild
@@ -18,7 +31,10 @@ make all
 
 ## How to use
 
-The solver is packaged in a static library, defining class `Solver` and subclassed to implement different solvers. Currently, only an Explicit Euler method has been defined.
+The solver is packaged in a static library, defining class `Solver` and subclassed to implement different solvers. Currently, the following solvers are implemented:
+
+1. A basic Explicit Euler method2
+2. An implicit Euler method using the adept library to implement automatic differentiation.
 
 An example of how to use the library is provided in [main.cpp](./main.cpp) and is explained below:
 
@@ -28,6 +44,9 @@ An example of how to use the library is provided in [main.cpp](./main.cpp) and i
     std::unique_ptr<OrangeDrumExplorer::Solver> solver;
     //Initialize an Explicit Euler solver with domain between 0 and 4, default time step
     solver = std::make_unique<OrangeDrumExplorer::EulerExplicit>(0., 4.);
+	//Or can be replaced by an Implicit Euler solver using the Bridge Pattern 
+	solver = std::make_unique<OrangeDrumExplorer::EulerImplicit>(0., 4.);
+
     // Explicitly set time step
     solver->set_time_step(4./128);
     ```

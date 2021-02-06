@@ -12,21 +12,22 @@ Orange-Drum-Explorer has the following dependencies:
 * (a subset of) [eigen-v3.3.9](https://eigen.tuxfamily.org/) is used for linear algebra 
 * (TODO:) [catch2-v2.13.4](https://github.com/catchorg/Catch2) is used for testing
 
-Header-only versions are distributed together with the package in [](lib/ext). If you have any of them already installed, you might consider editing [](lib/CMakeLists.txt) to use the installed packages.
+Header-only versions are distributed together with the package in [](lib/ext). If you have any of them already installed, you might consider updating [](lib/CMakeLists.txt) to use the installed packages.
 
 ### Using CMake
 
-On Windows:
+To Build only the demo:
 ```
 cmake . -Bbuild
 cd build
 cmake --build . --target Orange-Drum-Explorer --config Release
 ```
 
-On Linux (to be tested):
+To build the tests, etc.:
 ```
-cmake .
-make all
+cmake --build . --target all
+#make all #also works if you have Make
+ctest
 ```
 
 ## How to use

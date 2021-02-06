@@ -78,7 +78,7 @@ void _refresh_file(const std::string& fname){
         test_out.close();
     }
     else{
-        assert((1==0 && "Couldn't test file storage"));
+        assert((false && "Couldn't test file storage"));
     }
 }
 
@@ -94,19 +94,24 @@ void _check_file(const std::string& fname, int steps, double last_min, double la
         assert(((last_min < val && val < last_max) && "Solution accuracy from file"));
     }
     else{
-        assert((1==0 && "Couldn't read stored file"));
+        assert((false && "Couldn't read stored file"));
     }
 }
 
 template <typename S>
 void test_save_to_file(S& solver, const double bottom, const double top){
-    const std::string fname = "test_EE_solution.txt";
+    const std::string fname = "test_solution.txt";
     S solver2(0., 4.);
     solver2.set_time_step(4./128);
+    bool pass_solved_checked = false;
     try{
-        solver2.save_solution(std::ofstream());
+        std::ofstream empty ("This_file_should_be_empty.txt");
+        solver2.save_solution(empty);
     }
-    catch (std::bad_function_call){}
+    catch (std::bad_function_call){
+        pass_solved_checked = true;
+    }
+    assert((pass_solved_checked && "Unsolved equations shouldn't be storeable"));
     _refresh_file(fname);
     std::ofstream test_out(fname, std::ios::trunc);
     if (test_out.is_open()){
@@ -115,7 +120,7 @@ void test_save_to_file(S& solver, const double bottom, const double top){
         _check_file(fname, 129, bottom, top);
     }
     else{
-        assert((1==0 && "Couldn't test file storage"));
+        assert((false && "Couldn't test file storage"));
     }
 }
 
@@ -129,7 +134,7 @@ int main(int, char**) {
     test_large_dt<EE>();
     EE solver = test_solution<EE>(5.33506, 5.33508);
     test_save_to_file(solver, 5.33506, 5.33508);
-    typedef OrangeDrumExplorer::EulerExplicit IE;
+    typedef OrangeDrumExplorer::EulerImplicit IE;
     test_default<IE>();
     test_custom<IE>();
     test_limits<IE>();
@@ -137,5 +142,6 @@ int main(int, char**) {
     test_reversed<IE>();
     test_large_dt<IE>();
     IE solver2 = test_solution<IE>(1.90620,1.90622);
-    test_save_to_file(solver, 1.90620,1.90622);
+    test_save_to_file(solver2, 1.90620,1.90622);
+
 }

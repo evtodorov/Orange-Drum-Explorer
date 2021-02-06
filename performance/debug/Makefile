@@ -1,25 +1,25 @@
 default: sc1 sc2 sc3
 
 sc1: Solver.o scenario1.o
-	$(CXX) -o sc1 scenario1.o Solver.o $(STDFLAGS) $(CUSTOMFLAGS) --fopt-info-optall=sc1_link.opt
+	$(CXX) -o sc1 scenario1.o Solver.o $(STDFLAGS) $(CUSTOMFLAGS) -fopt-info-optall=sc1_link.opt
 
 sc2: Solver.o scenario2.o
-	$(CXX) -o sc2 scenario2.o Solver.o $(STDFLAGS) $(CUSTOMFLAGS) --fopt-info-optall=sc2_link.opt
+	$(CXX) -o sc2 scenario2.o Solver.o $(STDFLAGS) $(CUSTOMFLAGS) -fopt-info-optall=sc2_link.opt
 
 sc3: Solver.o scenario3.o
-	$(CXX) -o sc3 scenario3.o Solver.o $(STDFLAGS) $(CUSTOMFLAGS) --fopt-info-optall=sc3_link.opt
+	$(CXX) -o sc3 scenario3.o Solver.o $(STDFLAGS) $(CUSTOMFLAGS) -fopt-info-optall=sc3_link.opt
 
 scenario1.o: ../scenario1.cpp
-	$(CXX) -c -o scenario1.o ../scenario1.cpp $(STDFLAGS) $(CUSTOMFLAGS) $(INCLUDE_DIR) --fopt-info-optall=sc1_compile.opt
+	$(CXX) -c -o scenario1.o ../scenario1.cpp $(STDFLAGS) $(CUSTOMFLAGS) $(INCLUDE_DIR) -fopt-info-optall=sc1_compile.opt
 
 scenario2.o: ../scenario2.cpp
-	$(CXX) -c -o scenario2.o ../scenario2.cpp $(STDFLAGS) $(CUSTOMFLAGS) $(INCLUDE_DIR) --fopt-info-optall=sc2_compile.opt
+	$(CXX) -c -o scenario2.o ../scenario2.cpp $(STDFLAGS) $(CUSTOMFLAGS) $(INCLUDE_DIR) -fopt-info-optall=sc2_compile.opt
 
 scenario3.o: ../scenario3.cpp
-	$(CXX) -c -o scenario3.o ../scenario3.cpp $(STDFLAGS) $(CUSTOMFLAGS) $(INCLUDE_DIR) --fopt-info-optall=sc3_compile.opt
+	$(CXX) -c -o scenario3.o ../scenario3.cpp $(STDFLAGS) $(CUSTOMFLAGS) $(INCLUDE_DIR) -fopt-info-optall=sc3_compile.opt
 
 Solver.o: ../../lib/Solver.cpp
-	$(CXX) -c -o Solver.o ../../lib/Solver.cpp $(STDFLAGS) $(CUSTOMFLAGS) $(INCLUDE_DIR) --fopt-info-optall=solver_compile.opt
+	$(CXX) -c -o Solver.o ../../lib/Solver.cpp $(STDFLAGS) $(CUSTOMFLAGS) $(INCLUDE_DIR) -fopt-info-optall=solver_compile.opt
 
 run: run1 run2 run3
 
@@ -38,4 +38,4 @@ run3:
 	./sc3
 	@gprof sc3 profiling_sc3* > report_sc3.txt
 clean:
-	rm -f sc* *.o *.out *.txt profiling*
+	rm -f sc* *.o *.out *.txt profiling* *.opt

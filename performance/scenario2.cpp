@@ -12,7 +12,7 @@ int main(int, char**) {
     //Initialize an Implicit Euler solver with domain between 0 and 10, default time step
     solver = std::make_unique<OrangeDrumExplorer::EulerImplicit>(0., 10.);
     // Explicitly set time step
-    solver->set_time_step(10./(1024*64));
+    solver->set_time_step(10./(1024*256));
     // Create initial conditions
     OrangeDrumExplorer::vec y0 = {1., -2.};
     // Create lightweight function to solve

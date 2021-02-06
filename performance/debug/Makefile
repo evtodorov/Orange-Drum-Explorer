@@ -27,7 +27,7 @@ run1: export GMON_OUT_PREFIX = profiling_sc1
 run1: 	
 	./sc1
 	@gprof sc1 profiling_sc1* > report_sc1.txt
-
+	
 run2: export GMON_OUT_PREFIX=profiling_sc2
 run2:
 	./sc2

@@ -8,7 +8,7 @@
 
 // some parameters for the computationally intesive function
 const double package_length = 3.0;
-const size_t N_rollers = 1000;
+const size_t N_rollers = 10000;
 std::vector<double> roller_locations;
 std::vector<double> roller_forces;
 
@@ -46,7 +46,7 @@ int main(int, char**) {
     roller_forces.reserve(N_rollers);
     std::generate_n(roller_forces.begin(), N_rollers, gen_force);
 
-    std::uniform_real_distribution<double> dist_loc(-100.,100.);
+    std::uniform_real_distribution<double> dist_loc(-1000.,1000.);
     auto gen_loc = std::bind(dist_loc, eng);
     roller_locations.reserve(N_rollers);
     std::generate_n(roller_locations.begin(), N_rollers, gen_loc);

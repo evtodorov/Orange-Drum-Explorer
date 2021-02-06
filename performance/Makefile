@@ -7,7 +7,7 @@ export STDFALGS = "std=c++17"
 all: debug not_optimized optimized fully_optimized
 
 debug:
-	$(MAKE) -C debug CUSTOMFLAGS=-pg
+	$(MAKE) -C debug CUSTOMFLAGS="-pg -g -Og"
 
 not_optimized:
 	$(MAKE) -C not_optimized CUSTOMFLAGS="-O0 -p" 

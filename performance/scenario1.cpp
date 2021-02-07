@@ -4,6 +4,11 @@
 
 #include "Solver.h"
 
+// Create lightweight function to solve
+// y'' - y' + 3y = t -> y'' = t + y' - 3y
+double f (double t , const OrangeDrumExplorer::vec& y){
+    return t + y[1] - 3*y[0];
+}
 
 int main(int, char**) {
     //Setup a generic solver
@@ -15,10 +20,7 @@ int main(int, char**) {
     solver->set_time_step(10./(1024*1024*2));
     // Create initial conditions
     OrangeDrumExplorer::vec y0 = {1., -2.};
-    // Create lightweight function to solve
-    // y'' - y' + 3y = t -> y'' = t + y' - 3y
-    std::function<double(double, const OrangeDrumExplorer::vec&)> f = [](double t, OrangeDrumExplorer::vec y)
-                                 {return t + y[1] - 3*y[0];};
+
 
     auto t0 = std::chrono::steady_clock::now();
     // Solve the equation for the given initial conditions

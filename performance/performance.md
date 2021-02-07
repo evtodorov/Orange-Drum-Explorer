@@ -133,3 +133,9 @@ This optimization is also not taken onboard,
 
 ## Optimized
 As final conclusion, the optimizations taken into account all mostly impact the Explict Euler method. The profiling of the Implicit Euler suggests that the bottlenecks in the other methods are mostly due to the connections to the external libraries Adept and Eigen. Future optimizations of the Implicit Euler method would be thus most likely based on numrical algorithm choice (e.g. using itterative solutions rather than LU-decomposition of the  Jacobian). The final performance is shown below:
+
+| Compiler Optimization | debug | not_optimized | optimized | fully_optimized |
+|-----------------------|------:|--------------:|----------:|----------------:|
+| Scenario 1            | 0.11 s|    0.6 s      |   0.09 s  |      0.09 s     |
+| Scenario 2            | 1.2 s |   56.0 s      |   0.78 s  |      0.76 s     |
+| Scenario 3            | 1.0 s |   28.8 s      |   0.65 s  |      0.68 s     |

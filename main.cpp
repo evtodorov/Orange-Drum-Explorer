@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <memory>
 
 #include "Solver.h"
 
@@ -46,6 +47,11 @@ int main(int, char**) {
         case 1:
             //Initialize an Explicit Euler solver with domain between 0 and 4, default time step
             solver = std::make_unique<OrangeDrumExplorer::EulerExplicit>(0., 4.);
+            
+            //The Explicit solver works more efficiently without automatic differentiation
+            //OrangeDrumExplorer::func f = [](double t, const OrangeDrumExplorer::vec& y)
+            //                           {return (t + y[1] - 3.0*y[0]);};
+            
             break;
         case 2:
             //Or can be replaced by an Implicit Euler solver using the Bridge Pattern 
@@ -59,21 +65,27 @@ int main(int, char**) {
         solver->set_time_step(4./1024);
         // Create initial conditions
         OrangeDrumExplorer::vec y0 = {1., -2.};
-        // Create equation to solve
+        // Create equation to solve - instrumented for automatic differentiation - supported by all Solvers
         // y'' - y' + 3y = t -> y'' = t + y' - 3y
-        OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
-                                     {return OrangeDrumExplorer::adouble(t + y[1] - 3.0*y[0]);};
+        OrangeDrumExplorer::adfunc f = [](OrangeDrumExplorer::adouble t, const OrangeDrumExplorer::advec& y)
+                                       {return OrangeDrumExplorer::adouble(t + y[1] - 3.0*y[0]);};
         std::cout << "Hello, Solver!\n";
         // Solve the equation for the given initial conditions
-        OrangeDrumExplorer::vec y1 = solver->solve(f, y0);
-        auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0).count()/1000.;
-        std::cout << "Hello, Solution! in " << time << " seconds." << std::endl;
-        // Store the output
-        std::ofstream outfile("Example_solution.txt");
-        solver->save_solution(outfile);
-        outfile.close();
-        // Print the last value to stdout
-        std::cout << y1[y1.size()-1] << std::endl;
+        try {
+            OrangeDrumExplorer::vec y1 = solver->solve(f, y0);
+            auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0).count()/1000.;
+            std::cout << "Hello, Solution! in " << time << " seconds." << std::endl;
+            // Store the output
+            std::ofstream outfile("Example_solution.txt");
+            solver->save_solution(outfile);
+            outfile.close();
+            // Print the last value to stdout
+            std::cout << y1[y1.size()-1] << std::endl;
+        }
+        catch (std::bad_function_call& e){
+            std::cerr << "This solver only accepts function with automatic differentiation!" << std::endl;
+            return -1;
+        }
     }
     catch (std::invalid_argument& e){
         std::cerr << "One of the functions received an invalid argument!" << std::endl;

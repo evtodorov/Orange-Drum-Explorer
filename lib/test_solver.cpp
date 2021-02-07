@@ -4,7 +4,7 @@
 #include <cassert>
 
 const OrangeDrumExplorer::vec y0_const = {1.};
-const OrangeDrumExplorer::func f_const = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y){return 1.;};
+const OrangeDrumExplorer::adfunc f_const = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y){return 1.;};
 
 template<typename S>
 void test_default(){
@@ -59,13 +59,26 @@ void test_large_dt(){
     assert((false && "Too large time step"));
 }
 
-template<typename S>
+template<typename S, typename F = OrangeDrumExplorer::adfunc>
 S test_solution( double bottom, double top){
     S solver(0., 4.);
     solver.set_time_step(4./128);
     OrangeDrumExplorer::vec y0 = {1., -2.};
-    OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
-                                 {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
+    F f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
+                                   {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
+
+    OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
+    assert(((bottom < y1.back() && y1.back() < top) && "Solution accuracy"));
+    return solver;
+}
+
+template <>
+OrangeDrumExplorer::EulerExplicit test_solution<OrangeDrumExplorer::EulerExplicit, OrangeDrumExplorer::func>( double bottom, double top){
+    OrangeDrumExplorer::EulerExplicit solver(0., 4.);
+    solver.set_time_step(4./128);
+    OrangeDrumExplorer::vec y0 = {1., -2.};
+    OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y)
+            {return t + y[1] - 3*y[0];};
     OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
     assert(((bottom < y1.back() && y1.back() < top) && "Solution accuracy"));
     return solver;
@@ -78,7 +91,7 @@ void _refresh_file(const std::string& fname){
         test_out.close();
     }
     else{
-        assert((1==0 && "Couldn't test file storage"));
+        assert((false && "Couldn't test file storage"));
     }
 }
 
@@ -94,19 +107,24 @@ void _check_file(const std::string& fname, int steps, double last_min, double la
         assert(((last_min < val && val < last_max) && "Solution accuracy from file"));
     }
     else{
-        assert((1==0 && "Couldn't read stored file"));
+        assert((false && "Couldn't read stored file"));
     }
 }
 
 template <typename S>
 void test_save_to_file(S& solver, const double bottom, const double top){
-    const std::string fname = "test_EE_solution.txt";
+    const std::string fname = "test_solution.txt";
     S solver2(0., 4.);
     solver2.set_time_step(4./128);
+    bool pass_solved_checked = false;
     try{
-        solver2.save_solution(std::ofstream());
+        std::ofstream empty ("This_file_should_be_empty.txt");
+        solver2.save_solution(empty);
     }
-    catch (std::bad_function_call){}
+    catch (std::bad_function_call){
+        pass_solved_checked = true;
+    }
+    assert((pass_solved_checked && "Unsolved equations shouldn't be storeable"));
     _refresh_file(fname);
     std::ofstream test_out(fname, std::ios::trunc);
     if (test_out.is_open()){
@@ -115,8 +133,20 @@ void test_save_to_file(S& solver, const double bottom, const double top){
         _check_file(fname, 129, bottom, top);
     }
     else{
-        assert((1==0 && "Couldn't test file storage"));
+        assert((false && "Couldn't test file storage"));
     }
+}
+
+template <typename S, typename F>
+void test_wrong_functiontype(){
+    bool thrown = false;
+    try{
+        S solver = test_solution<S, F>(0., 1.);
+    }
+    catch (std::bad_function_call){
+        thrown = true;
+    }
+    assert((thrown && "Wrong function type doesn't throw the correct exception"));
 }
 
 int main(int, char**) {
@@ -129,7 +159,8 @@ int main(int, char**) {
     test_large_dt<EE>();
     EE solver = test_solution<EE>(5.33506, 5.33508);
     test_save_to_file(solver, 5.33506, 5.33508);
-    typedef OrangeDrumExplorer::EulerExplicit IE;
+    EE solver3 = test_solution<EE, OrangeDrumExplorer::func>(5.33506, 5.33508);
+    typedef OrangeDrumExplorer::EulerImplicit IE;
     test_default<IE>();
     test_custom<IE>();
     test_limits<IE>();
@@ -137,5 +168,5 @@ int main(int, char**) {
     test_reversed<IE>();
     test_large_dt<IE>();
     IE solver2 = test_solution<IE>(1.90620,1.90622);
-    test_save_to_file(solver, 1.90620,1.90622);
+    test_save_to_file(solver2, 1.90620,1.90622);
 }

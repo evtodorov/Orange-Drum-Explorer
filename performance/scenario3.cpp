@@ -3,7 +3,6 @@
 #include <memory>
 #include <random>
 #include <algorithm>
-#include <numeric>
 
 #include "Solver.h"
 
@@ -12,8 +11,7 @@ const double package_length = 3.0;
 const size_t N_rollers = 10000;
 std::vector<double> roller_locations;
 std::vector<double> roller_forces;
-std::vector<bool> mask(N_rollers, false);
-std::vector<double> accumulator(N_rollers, 0.);
+
 // computationally intensive function
 // roughly models movement of a package on powered rollers with random speeds
 // computation comes from detection of rollers to be taken into account
@@ -21,14 +19,11 @@ std::vector<double> accumulator(N_rollers, 0.);
 double compute(double t, OrangeDrumExplorer::vec y){
     //start with trivial implementation to have something to optimize
     double acceleration = 0;
+    for (auto i=0; i<N_rollers; i++){
+        //implictly cast bool to double to avoid if statement
+        acceleration += roller_forces[i]*(abs(roller_locations[i] - y[0] ) < package_length);
+    }
 
-    for (auto i=0; i<N_rollers; i++){
-        mask[i] =  abs(roller_locations[i] - y[0] ) < package_length;
-    }
-    for (auto i=0; i<N_rollers; i++){
-        accumulator[i] = roller_forces[i]*mask[i];
-    }
-    acceleration = std::accumulate(accumulator.begin(), accumulator.end(), 0.);
     return acceleration;
 }
 

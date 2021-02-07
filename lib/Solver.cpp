@@ -134,6 +134,38 @@ namespace OrangeDrumExplorer{
         return result;
     }
 
+
+    vec& EulerExplicit::solve(std::function<double(double, const vec&)> dnf_dtn, const vec& y0){
+
+        const double a = limit_low;
+        const double b = limit_high;
+        const double dt = time_step;
+        const size_t N = (b-a)/dt;
+        const size_t n = y0.size();
+        
+        vec ynext = y0;
+        result.push_back(y0[0]);
+        result.resize(N+1);
+        double t = a;
+        //step through the domain
+        for (auto i = 0; i < N; ++i){
+            t = a+(i+1)*dt;
+            // compute highest derivative for this loop
+            double funcval = dnf_dtn(t, ynext);
+            //update lower derivatives based on previous loop
+            for (auto j=0; j < n - 1; ++j){
+                // y(t+dt) = y(t) + y'(t)*dt
+                ynext[j] += ynext[j+1]*dt;
+            }
+            // update second highest derivative based on highest
+            ynext[n-1] += funcval*dt;
+            result[i+1] = ynext[0];
+        }
+        has_been_solved = true;
+        return result;
+    }
+
+
     double EulerImplicit::get_threshold(){
         return threshold;
     }

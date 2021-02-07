@@ -58,7 +58,6 @@ void test_large_dt(){
     }
     assert((false && "Too large time step"));
 }
-
 template<typename S>
 S test_solution( double bottom, double top){
     S solver(0., 4.);
@@ -66,6 +65,17 @@ S test_solution( double bottom, double top){
     OrangeDrumExplorer::vec y0 = {1., -2.};
     OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
                                  {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
+    OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
+    assert(((bottom < y1.back() && y1.back() < top) && "Solution accuracy"));
+    return solver;
+}
+template <>
+OrangeDrumExplorer::EulerExplicit test_solution<OrangeDrumExplorer::EulerExplicit>( double bottom, double top){
+    OrangeDrumExplorer::EulerExplicit solver(0., 4.);
+    solver.set_time_step(4./128);
+    OrangeDrumExplorer::vec y0 = {1., -2.};
+    std::function<double(double, const OrangeDrumExplorer::vec&)> f = [](double t, OrangeDrumExplorer::vec y)
+                                 {return t + y[1] - 3*y[0];};
     OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
     assert(((bottom < y1.back() && y1.back() < top) && "Solution accuracy"));
     return solver;

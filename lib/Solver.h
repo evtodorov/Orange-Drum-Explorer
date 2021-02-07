@@ -61,6 +61,7 @@ namespace OrangeDrumExplorer
     class EulerExplicit : public Solver {
         public:
             using Solver::Solver;
+            vec& solve(std::function<double(double, const vec&)> dnf_dtn, const vec& y0);
             vec& solve(func dnf_dtn, const vec& y0) override;
     };
 

@@ -16,9 +16,9 @@ std::vector<double> roller_forces;
 // roughly models movement of a package on powered rollers with random speeds
 // computation comes from detection of rollers to be taken into account
 // sorting the locations is purposefully ignored as an option to optimize.
-OrangeDrumExplorer::adouble compute(OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y){
+double compute(double t, OrangeDrumExplorer::vec y){
     //start with trivial implementation to have something to optimize
-    OrangeDrumExplorer::adouble acceleration = 0;
+    double acceleration = 0;
     for (auto i=0; i<N_rollers; i++){
         if ( abs(roller_locations[i] - y[0] ) < package_length ){
             acceleration += roller_forces[i];
@@ -30,7 +30,7 @@ OrangeDrumExplorer::adouble compute(OrangeDrumExplorer::adouble t, OrangeDrumExp
 
 int main(int, char**) {
     //Setup a generic solver
-    std::unique_ptr<OrangeDrumExplorer::Solver> solver;
+    std::unique_ptr<OrangeDrumExplorer::EulerExplicit> solver;
     
     //Initialize an Explicit Euler solver with domain between 0 and 4, default time step
     solver = std::make_unique<OrangeDrumExplorer::EulerExplicit>(0., 10.);

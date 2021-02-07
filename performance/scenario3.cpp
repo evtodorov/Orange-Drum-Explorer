@@ -16,7 +16,7 @@ std::vector<double> roller_forces;
 // roughly models movement of a package on powered rollers with random speeds
 // computation comes from detection of rollers to be taken into account
 // sorting the locations is purposefully ignored as an option to optimize.
-double compute(double t, OrangeDrumExplorer::vec y){
+double compute(double t, const OrangeDrumExplorer::vec& y){
     //start with trivial implementation to have something to optimize
     double acceleration = 0;
     for (auto i=0; i<N_rollers; i++){

@@ -49,7 +49,7 @@ int main(int, char**) {
             solver = std::make_unique<OrangeDrumExplorer::EulerExplicit>(0., 4.);
             
             //The Explicit solver works more efficiently without automatic differentiation
-            //OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y)
+            //OrangeDrumExplorer::func f = [](double t, const OrangeDrumExplorer::vec& y)
             //                           {return (t + y[1] - 3.0*y[0]);};
             
             break;
@@ -67,7 +67,7 @@ int main(int, char**) {
         OrangeDrumExplorer::vec y0 = {1., -2.};
         // Create equation to solve - instrumented for automatic differentiation - supported by all Solvers
         // y'' - y' + 3y = t -> y'' = t + y' - 3y
-        OrangeDrumExplorer::adfunc f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
+        OrangeDrumExplorer::adfunc f = [](OrangeDrumExplorer::adouble t, const OrangeDrumExplorer::advec& y)
                                        {return OrangeDrumExplorer::adouble(t + y[1] - 3.0*y[0]);};
         std::cout << "Hello, Solver!\n";
         // Solve the equation for the given initial conditions

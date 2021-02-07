@@ -62,17 +62,21 @@ An example of how to use the library is provided in [main.cpp](./main.cpp) and i
     ```
     // Create equation to solve
     // y'' - y' + 3y = t -> y'' = t + y' - 3y
-    OrangeDrumExplorer::adfunc f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
+    OrangeDrumExplorer::adfunc f = [](OrangeDrumExplorer::adouble t, const OrangeDrumExplorer::advec& y)
                                  {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
     ```
     Some Solvers which don't need derivative information (e.g. Euler Explicit) also support functions without AD, e.g.
     ```
     // Equivalent without automatic differentiation
-    OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y)
+    OrangeDrumExplorer::func f = [](double t, const OrangeDrumExplorer::vec& y)
                                  {return t + y[1] - 3*y[0];};
     ```
     Obviously, the function can also be explictly defined and doesn't need to be a lambda function, but any perfromance penalties of the lambda functions are optimized away by the compiler.
-	
+	 ```
+    OrangeDrumExplorer::adouble f (OrangeDrumExplorer::adouble t, const OrangeDrumExplorer::advec& y){
+        return t + y[1] - 3*y[0];
+    };
+    ```
 1.  The user calls the `solve` function of the Solver with the equation function and initial conditions vector. The output is the numerical solutions of the ODE at each time step in the domain. If using the Bridge Pattern as explained above, it's recommended to catch `std::bad_function_call` around the solution, although the compiler should prevent you from using unsupported function type for the Solver.
     ```
     // Solve the equation for the given initial conditions

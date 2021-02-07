@@ -17,7 +17,7 @@ int main(int, char**) {
     OrangeDrumExplorer::vec y0 = {1., -2.};
     // Create lightweight function to solve
     // y'' - y' + 3y = t -> y'' = t + y' - 3y
-    OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
+    OrangeDrumExplorer::adfunc f = [](OrangeDrumExplorer::adouble t, const OrangeDrumExplorer::advec& y)
                                     {return OrangeDrumExplorer::adouble(t + y[1] - 3.0*y[0]);};
 
     auto t0 = std::chrono::steady_clock::now();

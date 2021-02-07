@@ -12,8 +12,9 @@ namespace OrangeDrumExplorer
 {
     typedef adept::adouble adouble;
     typedef std::vector<double> vec;
+    typedef std::function<double(double, const vec&)> func ;
     typedef std::vector<adouble> advec;
-    typedef std::function<adouble(adouble, const advec&)> func ;
+    typedef std::function<adouble(adouble, const advec&)> adfunc ;
 
     /**
      * Base class for implementing solvers.\n
@@ -55,14 +56,15 @@ namespace OrangeDrumExplorer
              *      @param y - vector of lower derivatives y[0] = f; y[1] =f'; y[2] = f'' etc. up-to n-1
              * @param y0 - initial value of the function and n-1 lowest derivatives at the lower limit
              */
-            virtual vec& solve(func dnf_dtn, const vec& y0) = 0;
+            vec& solve(func dnf_dtn, const vec& y0);
+            virtual vec& solve(adfunc dnf_dtn, const vec& y0) = 0;
     };
 
     class EulerExplicit : public Solver {
         public:
             using Solver::Solver;
-            vec& solve(std::function<double(double, const vec&)> dnf_dtn, const vec& y0);
-            vec& solve(func dnf_dtn, const vec& y0) override;
+            vec& solve(func dnf_dtn, const vec& y0);
+            vec& solve(adfunc dnf_dtn, const vec& y0) override;
     };
 
     class EulerImplicit : public Solver {
@@ -71,14 +73,14 @@ namespace OrangeDrumExplorer
             const size_t max_iterations = 50;
             struct DivergentException;
             // Solve a non-linear equation using the Newton Method
-            vec NewtonSolve(func dnf_dtn, const double t, const vec& x0);
+            vec NewtonSolve(adfunc dnf_dtn, const double t, const vec& x0);
         public:
             using Solver::Solver;
             // Check the current threshold for the Newton iterative solver
             double get_threshold();
             // Check the current threshold for the Newton iterative solver
             void set_threshold(double);
-            vec& solve(func dnf_dtn, const vec& y0) override;
+            vec& solve(adfunc dnf_dtn, const vec& y0) override;
     };
 }
 

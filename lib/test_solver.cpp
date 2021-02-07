@@ -4,7 +4,7 @@
 #include <cassert>
 
 const OrangeDrumExplorer::vec y0_const = {1.};
-const OrangeDrumExplorer::func f_const = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y){return 1.;};
+const OrangeDrumExplorer::adfunc f_const = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y){return 1.;};
 
 template<typename S>
 void test_default(){
@@ -58,24 +58,27 @@ void test_large_dt(){
     }
     assert((false && "Too large time step"));
 }
-template<typename S>
+
+template<typename S, typename F = OrangeDrumExplorer::adfunc>
 S test_solution( double bottom, double top){
     S solver(0., 4.);
     solver.set_time_step(4./128);
     OrangeDrumExplorer::vec y0 = {1., -2.};
-    OrangeDrumExplorer::func f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
-                                 {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
+    F f = [](OrangeDrumExplorer::adouble t, OrangeDrumExplorer::advec y)
+                                   {return OrangeDrumExplorer::adouble(t + y[1] - 3*y[0]);};
+
     OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
     assert(((bottom < y1.back() && y1.back() < top) && "Solution accuracy"));
     return solver;
 }
+
 template <>
-OrangeDrumExplorer::EulerExplicit test_solution<OrangeDrumExplorer::EulerExplicit>( double bottom, double top){
+OrangeDrumExplorer::EulerExplicit test_solution<OrangeDrumExplorer::EulerExplicit, OrangeDrumExplorer::func>( double bottom, double top){
     OrangeDrumExplorer::EulerExplicit solver(0., 4.);
     solver.set_time_step(4./128);
     OrangeDrumExplorer::vec y0 = {1., -2.};
-    std::function<double(double, const OrangeDrumExplorer::vec&)> f = [](double t, OrangeDrumExplorer::vec y)
-                                 {return t + y[1] - 3*y[0];};
+    OrangeDrumExplorer::func f = [](double t, OrangeDrumExplorer::vec y)
+            {return t + y[1] - 3*y[0];};
     OrangeDrumExplorer::vec y1 = solver.solve(f, y0);
     assert(((bottom < y1.back() && y1.back() < top) && "Solution accuracy"));
     return solver;
@@ -134,6 +137,18 @@ void test_save_to_file(S& solver, const double bottom, const double top){
     }
 }
 
+template <typename S, typename F>
+void test_wrong_functiontype(){
+    bool thrown = false;
+    try{
+        S solver = test_solution<S, F>(0., 1.);
+    }
+    catch (std::bad_function_call){
+        thrown = true;
+    }
+    assert((thrown && "Wrong function type doesn't throw the correct exception"));
+}
+
 int main(int, char**) {
     typedef OrangeDrumExplorer::EulerExplicit EE;
     test_default<EE>();
@@ -144,6 +159,7 @@ int main(int, char**) {
     test_large_dt<EE>();
     EE solver = test_solution<EE>(5.33506, 5.33508);
     test_save_to_file(solver, 5.33506, 5.33508);
+    EE solver3 = test_solution<EE, OrangeDrumExplorer::func>(5.33506, 5.33508);
     typedef OrangeDrumExplorer::EulerImplicit IE;
     test_default<IE>();
     test_custom<IE>();
@@ -153,5 +169,4 @@ int main(int, char**) {
     test_large_dt<IE>();
     IE solver2 = test_solution<IE>(1.90620,1.90622);
     test_save_to_file(solver2, 1.90620,1.90622);
-
 }

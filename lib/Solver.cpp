@@ -27,6 +27,7 @@ namespace OrangeDrumExplorer{
             }
     };
 
+// -------- Solver ----------------
 
     Solver::Solver()
         : Solver(0., 1.) //default limits and step
@@ -78,9 +79,11 @@ namespace OrangeDrumExplorer{
 
        
     }
+    
     bool Solver::check_solution_cache(){
         return has_been_solved;
     }
+    
     void Solver::save_solution(std::ofstream& outfile){
         if (!has_been_solved){
             throw bad_function_call("No cached solution to save");
@@ -97,7 +100,14 @@ namespace OrangeDrumExplorer{
         }
     }
 
-    vec& EulerExplicit::solve(func dnf_dtn, const vec& y0){
+    vec& Solver::solve(func dnf_dtn, const vec& y0){
+        throw bad_function_call("This Solver requires Adept instrumented function.");
+    }
+
+
+// -------- Euler Explicit ----------------
+
+    vec& EulerExplicit::solve(adfunc dnf_dtn, const vec& y0){
         adept::Stack ADstack; //segfault if not initialized
         ADstack.pause_recording();
 
@@ -107,35 +117,32 @@ namespace OrangeDrumExplorer{
         const size_t N = (b-a)/dt;
         const size_t n = y0.size();
         
-        advec yt;
+        advec ynext;
         for (auto d : y0){
-            yt.push_back(d);
+            ynext.push_back(d);
         }
-        advec ynext(n);
         result.push_back(y0[0]);
         result.resize(N+1);
         double t = a;
         //step through the domain
         for (auto i = 0; i < N; ++i){
             t = a+(i+1)*dt;
-
+            // compute highest derivative for this loop
+            adouble funcval = dnf_dtn(t, ynext);
             //update lower derivatives based on previous loop
             for (auto j=0; j < n - 1; ++j){
                 // y(t+dt) = y(t) + y'(t)*dt
-                ynext[j] = yt[j] + yt[j+1]*dt;
+                ynext[j] = ynext[j] + ynext[j+1]*dt;
             }
-            // compute highest derivative for this loop
             // update second highest derivative based on highest
-            ynext[n-1] = yt[n-1]+ dnf_dtn(t, yt)*dt;
-            yt = ynext; //copy - more efficient way?
+            ynext[n-1] += funcval*dt;
             result[i+1] = adept::value(ynext[0]);
         }
         has_been_solved = true;
         return result;
     }
 
-
-    vec& EulerExplicit::solve(std::function<double(double, const vec&)> dnf_dtn, const vec& y0){
+    vec& EulerExplicit::solve(func dnf_dtn, const vec& y0){
 
         const double a = limit_low;
         const double b = limit_high;
@@ -166,6 +173,8 @@ namespace OrangeDrumExplorer{
     }
 
 
+// -------- Euler Implicit ----------------
+
     double EulerImplicit::get_threshold(){
         return threshold;
     }
@@ -174,14 +183,13 @@ namespace OrangeDrumExplorer{
         threshold = new_threshold;
     }
 
-
     struct EulerImplicit::DivergentException : public std::exception{
         const char * what () const throw (){
     	    return "The solution doesn't converge.";
         }
     };
 
-    vec EulerImplicit::NewtonSolve(func dnf_dtn, const double t, const vec& x0){
+    vec EulerImplicit::NewtonSolve(adfunc dnf_dtn, const double t, const vec& x0){
         adept::Stack ADstack;
         const size_t n = x0.size();
         const double dt = time_step;
@@ -253,7 +261,7 @@ namespace OrangeDrumExplorer{
         return out;
     }
 
-    vec& EulerImplicit::solve(func dnf_dtn, const vec& y0){
+    vec& EulerImplicit::solve(adfunc dnf_dtn, const vec& y0){
         const double a = limit_low;
         const double b = limit_high;
         const double dt = time_step;

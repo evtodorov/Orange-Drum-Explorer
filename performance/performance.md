@@ -37,15 +37,15 @@ The baseline measurements are conducted at commit `45babd1` (tagged as `baseline
 
 ### Instrumentation
 
-A baseline performance is established for each of the scenarios at several optimization levels, created by a combined [Makefile]() and storing the results in 4 different directories by running `make`. The code is executed to collect profiling information by `make runall`. The profiling information is converted to report for each separate scenario. Additionally, any optimization work done by the compiler is logged using the `-fopt-info` option.
+A baseline performance is established for each of the scenarios at several optimization levels, created by a combined [Makefile](Makefile) and storing the results in 4 different directories by running `make`. The code is executed to collect profiling information by `make runall`. The profiling information is converted to report for each separate scenario. Additionally, any optimization work done by the compiler is logged using the `-fopt-info` option.
 
-The complexity of the function and the number of steps are chosen to be at roughly 1s at baseline and are kept constant through the optimization.
+The complexity of the function and the number of steps are chosen to be at roughly 1 s at baseline and are kept constant through the optimization.
 
 ### Compiler optimization levels
-[debug/]() is run with compiler option `-Og` as recommended in g++ documentation and is the most used in optimization.  
-[not_optimized/]() uses option `-O0`, however due to the use of the adept and eigen libraries, which are designed to be run with optimizing options, the profiling information is heavily polluted and not usable to identify bottlenecks in the Solver library.  
-[optimized/]() is run with `-O1` (and potentially custom single -fopt flags) to identify optimizing techniques which improve the performance of the Solver library  
-[fully_optimized/]() uses `-O3` to provide an upper bound on the perfromance improvement.
+[debug/](debug/) is run with compiler option `-Og` as recommended in g++ documentation and is the most used in optimization.  
+[not_optimized/](not_optimized/) uses option `-O0`, however due to the use of the adept and eigen libraries, which are designed to be run with optimizing options, the profiling information is heavily polluted and not usable to identify bottlenecks in the Solver library.  
+[optimized/](optimized/) is run with `-O1` (and potentially custom single -fopt flags) to identify optimizing techniques which improve the performance of the Solver library  
+[fully_optimized/](fully_optimized/) uses `-O3` to provide an upper bound on the perfromance improvement.
 
 ### Baseline Performance
 | Compiler Optimization | debug | not_optimized | optimized | fully_optimized |
@@ -62,7 +62,7 @@ The output of the `gprof` tool is used to identify bottlenecks.
 
 **Scenario 2** is dominated by the `EulerImplicit::NewtonSolve` function, which is in turn dominated by the initialization of the automatic differentioan stack `adept::Stack::initialize` and the LU-decomposition `Eigen::FullPivLU` of the Jacobian matrix.
 
-**Scenario 3** is, as constructed, more than 95% dominated by the computationally intensive toy function.
+**Scenario 3** is, as constructed, more than 95% dominated by the computationally intensive toy function. The loop inside ("collision detection") has not been automaticaally vectorized due to the control flow, as confirmed by the `-fopt-info` output.
 
 ## Implemented Optimizations
 ### Templated adept adouble function

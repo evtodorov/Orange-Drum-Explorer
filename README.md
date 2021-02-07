@@ -16,7 +16,7 @@ Header-only versions are distributed together with the package in [](lib/ext). I
 
 ### Using CMake
 
-To Build only the demo:
+To build only the demo:
 ```
 cmake . -Bbuild
 cd build
@@ -34,7 +34,7 @@ ctest
 
 The solver is packaged in a static library, defining class `Solver` and subclassed to implement different solvers. Currently, the following solvers are implemented:
 
-1. A basic Explicit Euler method2
+1. A basic Explicit Euler method
 2. An implicit Euler method using the adept library to implement automatic differentiation.
 
 An example of how to use the library is provided in [main.cpp](./main.cpp) and is explained below:
@@ -82,11 +82,16 @@ An example of how to use the library is provided in [main.cpp](./main.cpp) and i
 	
 ### How to extend
 Implementing new Solvers is very easy - simply inherrit from the `Solver` class, override the virtual `solve` function and reuse or override other functions as you see fit!
-```class YourNewSolver : public Solver {
+```
+class YourNewSolver : public Solver {
         protected:
 			//your private vars
         public:
 			//reuse Constructors
             using Solver::Solver;
 			//override the virtual solve function
-            vec& solve(func dnf_dtn, const vec& y0) override; ```
+            vec& solve(func dnf_dtn, const vec& y0) override; 
+```
+
+## Performance optimization
+The performance optimization process is discussed in [performance/performance.md](performance/performance.md)

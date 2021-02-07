@@ -143,27 +143,22 @@ namespace OrangeDrumExplorer{
         const size_t N = (b-a)/dt;
         const size_t n = y0.size();
         
-        vec yt;
-        for (auto d : y0){
-            yt.push_back(d);
-        }
-        vec ynext(n);
+        vec ynext = y0;
         result.push_back(y0[0]);
         result.resize(N+1);
         double t = a;
         //step through the domain
         for (auto i = 0; i < N; ++i){
             t = a+(i+1)*dt;
-
+            // compute highest derivative for this loop
+            double funcval = dnf_dtn(t, ynext);
             //update lower derivatives based on previous loop
             for (auto j=0; j < n - 1; ++j){
                 // y(t+dt) = y(t) + y'(t)*dt
-                ynext[j] = yt[j] + yt[j+1]*dt;
+                ynext[j] += ynext[j+1]*dt;
             }
-            // compute highest derivative for this loop
             // update second highest derivative based on highest
-            ynext[n-1] = yt[n-1]+ dnf_dtn(t, yt)*dt;
-            yt = ynext; //copy - more efficient way?
+            ynext[n-1] += funcval*dt;
             result[i+1] = ynext[0];
         }
         has_been_solved = true;
